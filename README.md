@@ -12,10 +12,21 @@ Terraform을 사용한 Cat CICD 인프라 관리 프로젝트입니다.
 ├── providers.tf            # Provider 설정
 ├── variables.tf            # 변수 정의
 ├── outputs.tf              # Output 값 정의
+├── terraform.tfvars.example # Terraform 변수 값 예시
 ├── .pre-commit-config.yaml # Pre-commit hooks 설정
 ├── .tflint.hcl             # TFLint 설정
 ├── PRE-COMMIT-GUIDE.md     # Pre-commit 가이드
-├── modules/                # Terraform 모듈 (선택사항)
+├── SETUP-HISTORY.md        # 인프라 설정 히스토리
+├── modules/                # Terraform 모듈
+│   ├── vpc/                # VPC 및 네트워크 구성
+│   ├── alb/                # Application Load Balancer
+│   ├── ecs/                # ECS Cluster 및 Task 정의
+│   ├── ecr/                # ECR 리포지토리
+│   ├── cloudfront/         # CloudFront 배포
+│   └── security-groups/    # 보안 그룹
+├── examples/               # 예시 파일
+│   ├── ecs-task-definitions/ # ECS Task Definition 예시
+│   └── scripts/            # 배포 스크립트 예시
 └── .github/workflows/      # GitHub Actions 워크플로우
 ```
 

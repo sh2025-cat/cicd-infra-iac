@@ -273,9 +273,90 @@ pre-commit run --all-files
 
 GitHub Actions를 통해 자동으로 Terraform 검증 및 배포를 수행합니다.
 
-- Push 시: Terraform fmt, validate 검사
-- PR 시: Terraform plan 실행
-- Main 브랜치 머지 시: Terraform apply 실행 (수동 승인 필요)
+### Workflow 동작
+
+- **Push 시**: Terraform fmt, validate 검사
+- **PR 시**: Terraform plan 실행 및 결과를 PR에 코멘트
+- **Main 브랜치 Push 시**: Terraform apply 자동 실행 (production environment)
+- **수동 실행 (workflow_dispatch)**: Terraform destroy
+
+### GitHub Secrets 설정
+
+GitHub Actions에서 AWS 리소스를 관리하기 위해 다음 Secrets를 설정해야 합니다.
+
+리포지토리 설정 > Settings > Secrets and variables > Actions > New repository secret
+
+| Secret 이름 | 설명 | 예시 값 |
+|------------|------|---------|
+| `AWS_ACCESS_KEY` | AWS IAM 사용자의 Access Key ID | `AKIAIOSFODNN7EXAMPLE` |
+| `AWS_SECRET_KEY` | AWS IAM 사용자의 Secret Access Key | `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` |
+
+#### AWS IAM 사용자 권한 요구사항
+
+GitHub Actions에서 사용할 IAM 사용자는 다음 권한이 필요합니다:
+
+**필수 권한**:
+- `AmazonVPCFullAccess` - VPC, 서브넷, 라우팅 테이블 관리
+- `AmazonECS_FullAccess` - ECS 클러스터, 서비스, 태스크 관리
+- `AmazonEC2ContainerRegistryFullAccess` - ECR 리포지토리 관리
+- `ElasticLoadBalancingFullAccess` - ALB 및 타겟 그룹 관리
+- `CloudFrontFullAccess` - CloudFront 배포 관리
+- `IAMFullAccess` - ECS Task Role 및 Execution Role 관리
+- `AmazonS3FullAccess` - Terraform state 파일 접근 (S3 backend)
+- `AmazonDynamoDBFullAccess` - Terraform state locking (DynamoDB)
+
+**커스텀 정책 (권장)**:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*",
+        "ecs:*",
+        "ecr:*",
+        "elasticloadbalancing:*",
+        "cloudfront:*",
+        "iam:*",
+        "s3:*",
+        "dynamodb:*",
+        "logs:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+#### IAM 사용자 생성 방법
+
+```bash
+# IAM 사용자 생성
+aws iam create-user --user-name github-actions-terraform
+
+# Access Key 생성
+aws iam create-access-key --user-name github-actions-terraform
+
+# 필요한 정책 연결 (예시)
+aws iam attach-user-policy \
+  --user-name github-actions-terraform \
+  --policy-arn arn:aws:iam::aws:policy/PowerUserAccess
+
+aws iam attach-user-policy \
+  --user-name github-actions-terraform \
+  --policy-arn arn:aws:iam::aws:policy/IAMFullAccess
+```
+
+### GitHub Environment 설정
+
+`production` environment를 설정하여 배포 시 수동 승인을 요구할 수 있습니다.
+
+1. Settings > Environments > New environment
+2. Environment name: `production`
+3. Protection rules:
+   - ✅ Required reviewers (배포 전 승인 필요)
+   - ✅ Wait timer (배포 전 대기 시간 설정 가능)
 
 ## 참고 자료
 

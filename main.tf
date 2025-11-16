@@ -1,0 +1,84 @@
+# ===========================================
+# VPC Module
+# ===========================================
+
+module "vpc" {
+  source = "./modules/vpc"
+
+  name              = var.project_name
+  vpc_cidr          = var.vpc_cidr
+  azs               = var.availability_zones
+  public_cidrs      = var.public_subnet_cidrs
+  private_app_cidrs = var.private_app_subnet_cidrs
+  private_db_cidrs  = var.private_db_subnet_cidrs
+}
+
+# ===========================================
+# Security Groups Module
+# ===========================================
+
+module "security_groups" {
+  source = "./modules/security-groups"
+
+  name_prefix   = var.project_name
+  vpc_id        = module.vpc.vpc_id
+  create_rds_sg = var.create_rds
+
+  tags = {
+    Environment = var.environment
+    Project     = "Softbank2025-Cat"
+  }
+}
+
+# ===========================================
+# ECS Cluster Module
+# ===========================================
+
+module "ecs" {
+  source = "./modules/ecs"
+
+  cluster_name              = "${var.project_name}-cluster"
+  enable_container_insights = var.enable_container_insights
+  log_retention_days        = var.ecs_log_retention_days
+  use_fargate_spot          = var.use_fargate_spot
+
+  tags = {
+    Environment = var.environment
+    Project     = "Softbank2025-Cat"
+  }
+}
+
+# ===========================================
+# ECR Repositories Module
+# ===========================================
+
+module "ecr" {
+  source = "./modules/ecr"
+
+  project_name = var.project_name
+
+  tags = {
+    Environment = var.environment
+    Project     = "Softbank2025-Cat"
+  }
+}
+
+# ===========================================
+# Application Load Balancer Module
+# ===========================================
+
+module "alb" {
+  source = "./modules/alb"
+
+  name_prefix           = var.project_name
+  vpc_id                = module.vpc.vpc_id
+  public_subnet_ids     = module.vpc.public_subnet
+  alb_security_group_id = module.security_groups.alb_sg_id
+  health_check_path     = var.alb_health_check_path
+  certificate_arn       = var.alb_certificate_arn
+
+  tags = {
+    Environment = var.environment
+    Project     = "Softbank2025-Cat"
+  }
+}

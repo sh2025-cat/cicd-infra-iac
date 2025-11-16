@@ -1,0 +1,53 @@
+repos:
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.96.1  # 최신 버전 사용
+    hooks:
+      # Terraform 코드 포맷팅
+      - id: terraform_fmt
+        name: Terraform fmt
+        description: Terraform 코드를 표준 형식으로 포맷팅합니다
+
+      # Terraform 검증
+      - id: terraform_validate
+        name: Terraform validate
+        description: Terraform 구성 파일의 유효성을 검사합니다
+
+
+      # Terraform 린팅
+      - id: terraform_tflint
+        name: Terraform tflint
+        description: TFLint를 사용하여 Terraform 코드 품질을 검사합니다
+        args:
+          - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+
+      # 보안 스캔 - tfsec (해커톤용으로 비활성화 - false positive 많음)
+      # - id: terraform_tfsec
+      #   name: Terraform tfsec
+      #   description: tfsec를 사용하여 보안 취약점을 검사합니다
+
+  # 일반적인 파일 검사
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      # 파일 끝에 빈 줄 추가
+      - id: end-of-file-fixer
+        name: Fix end of files
+
+      # 후행 공백 제거
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+        args: [--markdown-linebreak-ext=md]
+
+      # YAML 구문 검사
+      - id: check-yaml
+        name: Check YAML
+        args: [--allow-multiple-documents]
+
+      # 대용량 파일 체크
+      - id: check-added-large-files
+        name: Check for large files
+        args: [--maxkb=500]
+
+      # merge conflict 마커 체크
+      - id: check-merge-conflict
+        name: Check for merge conflicts

@@ -1,0 +1,48 @@
+{
+  "family": "cat-inventory-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::277679348386:role/cat-cluster-task-execution-role",
+  "taskRoleArn": "arn:aws:iam::277679348386:role/cat-cluster-task-role",
+  "containerDefinitions": [
+    {
+      "name": "inventory-api",
+      "image": "277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-frontend:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "ENV",
+          "value": "dev"
+        },
+        {
+          "name": "PORT",
+          "value": "80"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/cat-inventory-api",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}

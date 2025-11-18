@@ -75,9 +75,46 @@ variable "use_fargate_spot" {
 # ===========================================
 
 variable "create_rds" {
-  description = "Whether to create RDS security group"
+  description = "Whether to create RDS instance"
   type        = bool
   default     = false
+}
+
+variable "rds_engine_version" {
+  description = "MySQL engine version"
+  type        = string
+  default     = "8.0.39"
+}
+
+variable "rds_instance_class" {
+  description = "RDS instance class"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+variable "rds_allocated_storage" {
+  description = "Allocated storage in GB"
+  type        = number
+  default     = 20
+}
+
+variable "rds_database_name" {
+  description = "Name of the default database"
+  type        = string
+  default     = "catdb"
+}
+
+variable "rds_master_username" {
+  description = "Master username for RDS"
+  type        = string
+  default     = "admin"
+}
+
+variable "rds_master_password" {
+  description = "Master password for RDS"
+  type        = string
+  sensitive   = true
+  default     = ""
 }
 
 # ===========================================

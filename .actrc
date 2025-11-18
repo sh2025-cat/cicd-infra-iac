@@ -1,0 +1,11 @@
+# act configuration file
+# https://github.com/nektos/act
+
+# Use medium-sized runner image
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Load secrets from .secrets file (if exists)
+--secret-file .secrets
+
+# Use host network (for AWS CLI)
+--container-architecture linux/amd64

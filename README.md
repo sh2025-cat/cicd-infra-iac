@@ -6,28 +6,61 @@ Terraform을 사용한 Cat CICD 인프라 관리 프로젝트입니다.
 
 ```
 .
-├── backend.tf              # Terraform backend 설정 (실제 사용)
-├── backend.tf.example      # Terraform backend 설정 예시 파일
+├── backend.tf              # Terraform backend 설정
 ├── main.tf                 # 메인 인프라 리소스 정의
 ├── providers.tf            # Provider 설정
 ├── variables.tf            # 변수 정의
 ├── outputs.tf              # Output 값 정의
-├── terraform.tfvars.example # Terraform 변수 값 예시
 ├── .pre-commit-config.yaml # Pre-commit hooks 설정
 ├── .tflint.hcl             # TFLint 설정
+├── infrastructure.drawio   # 인프라 아키텍처 다이어그램
+├── README.md               # 프로젝트 설명
+├── ARCHITECTURE.md         # 인프라 아키텍처 문서
 ├── PRE-COMMIT-GUIDE.md     # Pre-commit 가이드
 ├── SETUP-HISTORY.md        # 인프라 설정 히스토리
+├── SETUP-CREDENTIALS.md    # AWS 자격증명 설정 가이드
 ├── modules/                # Terraform 모듈
 │   ├── vpc/                # VPC 및 네트워크 구성
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   ├── variables.tf
+│   │   └── versions.tf
 │   ├── alb/                # Application Load Balancer
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   ├── variables.tf
+│   │   └── versions.tf
 │   ├── ecs/                # ECS Cluster 및 Task 정의
+│   │   ├── main.tf
+│   │   ├── iam.tf
+│   │   ├── outputs.tf
+│   │   ├── variables.tf
+│   │   └── versions.tf
 │   ├── ecr/                # ECR 리포지토리
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   ├── variables.tf
+│   │   └── versions.tf
 │   ├── cloudfront/         # CloudFront 배포
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   ├── variables.tf
+│   │   └── versions.tf
 │   └── security-groups/    # 보안 그룹
+│       ├── main.tf
+│       ├── outputs.tf
+│       ├── variables.tf
+│       └── versions.tf
 ├── examples/               # 예시 파일
-│   ├── ecs-task-definitions/ # ECS Task Definition 예시
-│   └── scripts/            # 배포 스크립트 예시
+│   ├── README.md
+│   ├── ecs-task-definitions/
+│   │   ├── backend.json    # Backend API Task Definition
+│   │   └── frontend.json   # Frontend Task Definition
+│   └── scripts/
+│       ├── deploy-ecs-service.sh  # ECS 서비스 배포 스크립트
+│       └── push-to-ecr.sh         # ECR 이미지 푸시 스크립트
 └── .github/workflows/      # GitHub Actions 워크플로우
+    └── terrafm.yml         # Terraform CI/CD 워크플로우
 ```
 
 ## Backend 설정
@@ -36,13 +69,7 @@ Terraform은 state 파일을 원격 저장소에 저장하여 팀원들과 안�
 
 ### Backend 설정 방법
 
-1. `backend.tf.example` 파일을 복사하여 `backend.tf` 파일을 생성합니다:
-
-```bash
-cp backend.tf.example backend.tf
-```
-
-2. `backend.tf` 파일의 내용:
+`backend.tf` 파일에 S3 backend가 설정되어 있습니다:
 
 ```hcl
 terraform {
@@ -93,17 +120,64 @@ terraform init -migrate-state
 
 ### 주의사항
 
-1. **backend.tf 파일 관리**
-   - `backend.tf` 파일은 `.gitignore`에 포함되어 있어 Git에 커밋되지 않습니다
-   - 각 개발자는 `backend.tf.example`을 복사하여 사용해야 합니다
-
-2. **State 파일 잠금**
+1. **State 파일 잠금**
    - S3 backend는 DynamoDB를 사용하여 state 잠금을 지원합니다
-   - 동시 수정을 방지하려면 DynamoDB 테이블 설정이 필요할 수 있습니다
+   - 동시 수정을 방지하려면 DynamoDB 테이블 설정이 필요합니다
 
-3. **권한 설정**
+2. **권한 설정**
    - S3 버킷에 대한 읽기/쓰기 권한이 필요합니다
    - AWS credentials가 올바르게 설정되어 있어야 합니다
+
+## Terraform Variables 관리 (S3)
+
+민감한 정보(DB 비밀번호 등)를 포함하는 `terraform.tfvars` 파일은 S3에 저장되어 관리됩니다.
+
+### S3 저장 위치
+
+```
+s3://softbank2025-cat-tfstate/cat-cicd/terraform.tfvars
+```
+
+### 로컬 개발 시 사용법
+
+#### 1. S3에서 다운로드
+
+```bash
+# 스크립트 사용 (권장)
+./scripts/sync-tfvars.sh download
+
+# 또는 직접 AWS CLI 사용
+aws s3 cp s3://softbank2025-cat-tfstate/cat-cicd/terraform.tfvars ./terraform.tfvars
+```
+
+#### 2. 변수 수정 후 S3에 업로드
+
+```bash
+# terraform.tfvars 파일 수정 후
+vim terraform.tfvars
+
+# S3에 업로드
+./scripts/sync-tfvars.sh upload
+
+# 또는 직접 AWS CLI 사용
+aws s3 cp ./terraform.tfvars s3://softbank2025-cat-tfstate/cat-cicd/terraform.tfvars
+```
+
+### GitHub Actions 자동 다운로드
+
+GitHub Actions 워크플로우는 자동으로 S3에서 `terraform.tfvars`를 다운로드합니다.
+
+```yaml
+- name: Download terraform.tfvars from S3
+  run: |
+    aws s3 cp s3://softbank2025-cat-tfstate/cat-cicd/terraform.tfvars ./terraform.tfvars
+```
+
+### 보안 주의사항
+
+- `terraform.tfvars` 파일은 `.gitignore`에 추가되어 Git에 커밋되지 않습니다
+- S3 버킷 접근 권한이 있는 사용자만 변수 파일을 다운로드/수정할 수 있습니다
+- GitHub Actions는 AWS credentials를 통해 S3에 접근합니다
 
 ## 사전 요구사항
 
@@ -235,12 +309,6 @@ Terraform으로 배포되는 AWS 리소스:
 
 ### 1. 인프라 배포
 
-#### Backend 설정
-
-```bash
-cp backend.tf.example backend.tf
-```
-
 #### Terraform 초기화 및 배포
 
 ```bash
@@ -279,6 +347,23 @@ pre-commit install
 # 모든 파일 검사
 pre-commit run --all-files
 ```
+
+## 로컬에서 GitHub Actions 테스트
+
+배포 전에 로컬에서 워크플로우를 테스트할 수 있습니다.
+
+### 빠른 테스트 (권장)
+
+```bash
+./scripts/test-workflow-local.sh
+```
+
+이 스크립트는 다음을 자동으로 실행합니다:
+- Terraform format 체크
+- S3에서 terraform.tfvars 다운로드
+- Terraform init, validate, plan
+
+자세한 내용은 [LOCAL-TESTING-GUIDE.md](./LOCAL-TESTING-GUIDE.md)를 참고하세요.
 
 ## CI/CD
 

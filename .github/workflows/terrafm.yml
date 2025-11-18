@@ -37,6 +37,10 @@ jobs:
     - name: Terraform Format Check
       run: terraform fmt -check -recursive
 
+    - name: Download terraform.tfvars from S3
+      run: |
+        aws s3 cp s3://softbank2025-cat-tfstate/cat-cicd/terraform.tfvars ./terraform.tfvars
+
     - name: Terraform Init
       run: terraform init
 
@@ -64,6 +68,10 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
         aws-region: ${{ env.AWS_REGION }}
+
+    - name: Download terraform.tfvars from S3
+      run: |
+        aws s3 cp s3://softbank2025-cat-tfstate/cat-cicd/terraform.tfvars ./terraform.tfvars
 
     - name: Terraform Init
       run: terraform init
@@ -139,6 +147,10 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
+    - name: Download terraform.tfvars from S3
+      run: |
+        aws s3 cp s3://softbank2025-cat-tfstate/cat-cicd/terraform.tfvars ./terraform.tfvars
+
     - name: Terraform Init
       run: terraform init
 
@@ -177,6 +189,10 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
         aws-region: ${{ env.AWS_REGION }}
+
+    - name: Download terraform.tfvars from S3
+      run: |
+        aws s3 cp s3://softbank2025-cat-tfstate/cat-cicd/terraform.tfvars ./terraform.tfvars
 
     - name: Terraform Init
       run: terraform init

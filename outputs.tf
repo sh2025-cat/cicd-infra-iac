@@ -90,3 +90,33 @@ output "alb_target_group_arn" {
   description = "ALB Target Group ARN"
   value       = module.alb.target_group_arn
 }
+
+# ===========================================
+# RDS Outputs
+# ===========================================
+
+output "rds_instance_endpoint" {
+  description = "RDS instance endpoint"
+  value       = var.create_rds ? module.rds[0].db_instance_endpoint : null
+}
+
+output "rds_instance_address" {
+  description = "RDS instance address"
+  value       = var.create_rds ? module.rds[0].db_instance_address : null
+}
+
+output "rds_instance_port" {
+  description = "RDS instance port"
+  value       = var.create_rds ? module.rds[0].db_instance_port : null
+}
+
+output "rds_database_name" {
+  description = "Database name"
+  value       = var.create_rds ? module.rds[0].db_name : null
+}
+
+output "rds_master_username" {
+  description = "Master username"
+  value       = var.create_rds ? module.rds[0].db_master_username : null
+  sensitive   = true
+}

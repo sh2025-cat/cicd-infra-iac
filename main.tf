@@ -82,3 +82,28 @@ module "alb" {
     Project     = "Softbank2025-Cat"
   }
 }
+
+# ===========================================
+# RDS MySQL Module
+# ===========================================
+
+module "rds" {
+  source = "./modules/rds"
+  count  = var.create_rds ? 1 : 0
+
+  name_prefix        = var.project_name
+  db_subnet_ids      = module.vpc.db_subnet
+  security_group_ids = [module.security_groups.rds_sg_id]
+
+  engine_version    = var.rds_engine_version
+  instance_class    = var.rds_instance_class
+  allocated_storage = var.rds_allocated_storage
+  database_name     = var.rds_database_name
+  master_username   = var.rds_master_username
+  master_password   = var.rds_master_password
+
+  tags = {
+    Environment = var.environment
+    Project     = "Softbank2025-Cat"
+  }
+}

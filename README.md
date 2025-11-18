@@ -41,6 +41,11 @@ Terraform을 사용한 Cat CICD 인프라 관리 프로젝트입니다.
 │   │   ├── outputs.tf
 │   │   ├── variables.tf
 │   │   └── versions.tf
+│   ├── cloudwatch-logs/   # CloudWatch Log Groups
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   ├── variables.tf
+│   │   └── versions.tf
 │   ├── cloudfront/         # CloudFront 배포
 │   │   ├── main.tf
 │   │   ├── outputs.tf
@@ -301,6 +306,11 @@ Terraform으로 배포되는 AWS 리소스:
 - **ECR Repositories**: 2개
   - `cat-backend` (Backend API)
   - `cat-frontend` (Frontend)
+- **CloudWatch Log Groups**: ECS Task 로깅
+  - `/ecs/cat-backend` - Backend 애플리케이션 로그
+  - `/ecs/cat-frontend` - Frontend 애플리케이션 로그
+  - 로그 보존 기간: 7일 (기본값, 설정 가능)
+  - Terraform으로 사전 생성 (권한 문제 방지)
 
 **참고**: ECS Services와 Task Definitions은 애플리케이션 레포지토리에서 관리합니다. [ECS-DEPLOYMENT-GUIDE.md](./ECS-DEPLOYMENT-GUIDE.md) 참고
 

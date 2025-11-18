@@ -288,12 +288,9 @@ Terraform으로 배포되는 AWS 리소스:
 
 ### 컨테이너 인프라
 - **ECS Cluster**: `cat-cluster` (Fargate)
-- **ECR Repositories**: 5개
-  - `cat-gateway-api`
-  - `cat-reservation-api`
-  - `cat-inventory-api`
-  - `cat-payment-sim-api`
-  - `cat-reservation-worker`
+- **ECR Repositories**: 2개
+  - `cat-backend` (Backend API)
+  - `cat-frontend` (Frontend)
 
 ### 로드 밸런서
 - **ALB**: HTTP(80) + HTTPS(443)

@@ -7,11 +7,8 @@
 ```
 examples/
 ├── ecs-task-definitions/       # ECS Task Definition JSON 템플릿
-│   ├── gateway-api.json
-│   ├── reservation-api.json
-│   ├── inventory-api.json
-│   ├── payment-sim-api.json
-│   └── reservation-worker.json
+│   ├── backend.json           # Backend API Task Definition
+│   └── frontend.json          # Frontend Task Definition
 ├── scripts/                    # 배포 스크립트
 │   ├── push-to-ecr.sh         # ECR에 Docker 이미지 푸시
 │   └── deploy-ecs-service.sh  # ECS Service 배포
@@ -40,18 +37,15 @@ examples/
 ```bash
 cd examples/scripts
 
-# 예시: Gateway API 배포
-./push-to-ecr.sh gateway-api ../../path/to/Dockerfile latest
+# Backend API 배포
+./push-to-ecr.sh backend ../../path/to/backend/Dockerfile latest
 
-# 다른 서비스들
-./push-to-ecr.sh reservation-api ../../path/to/Dockerfile v1.0.0
-./push-to-ecr.sh inventory-api ../../path/to/Dockerfile latest
-./push-to-ecr.sh payment-sim-api ../../path/to/Dockerfile latest
-./push-to-ecr.sh reservation-worker ../../path/to/Dockerfile latest
+# Frontend 배포
+./push-to-ecr.sh frontend ../../path/to/frontend/Dockerfile latest
 ```
 
 **스크립트 파라미터:**
-- `<service-name>`: 서비스 이름 (gateway-api, reservation-api 등)
+- `<service-name>`: 서비스 이름 (backend, frontend)
 - `<dockerfile-path>`: Dockerfile 경로 (기본값: ./Dockerfile)
 - `<tag>`: 이미지 태그 (기본값: latest)
 
@@ -60,14 +54,11 @@ cd examples/scripts
 ```bash
 cd examples/scripts
 
-# API 서비스 배포 (ALB에 연결됨)
-./deploy-ecs-service.sh gateway-api 2      # 2개 Task 실행
-./deploy-ecs-service.sh reservation-api 1
-./deploy-ecs-service.sh inventory-api 1
-./deploy-ecs-service.sh payment-sim-api 1
+# Backend API 배포 (ALB에 연결됨)
+./deploy-ecs-service.sh backend 2      # 2개 Task 실행
 
-# Worker 배포 (ALB 연결 없음)
-./deploy-ecs-service.sh reservation-worker 1
+# Frontend 배포 (ALB에 연결됨)
+./deploy-ecs-service.sh frontend 2     # 2개 Task 실행
 ```
 
 **스크립트 파라미터:**
@@ -87,23 +78,44 @@ aws ecr get-login-password --region ap-northeast-2 | \
 
 ### 2. Docker 이미지 빌드 및 푸시
 
+#### Backend
+
 ```bash
 # 빌드
-docker build -t cat-gateway-api:latest .
+docker build -t cat-backend:latest ./backend
 
 # 태그
-docker tag cat-gateway-api:latest \
-  277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-gateway-api:latest
+docker tag cat-backend:latest \
+  277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-backend:latest
 
 # 푸시
-docker push 277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-gateway-api:latest
+docker push 277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-backend:latest
+```
+
+#### Frontend
+
+```bash
+# 빌드
+docker build -t cat-frontend:latest ./frontend
+
+# 태그
+docker tag cat-frontend:latest \
+  277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-frontend:latest
+
+# 푸시
+docker push 277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-frontend:latest
 ```
 
 ### 3. Task Definition 등록
 
 ```bash
+# Backend Task Definition
 aws ecs register-task-definition \
-  --cli-input-json file://ecs-task-definitions/gateway-api.json
+  --cli-input-json file://ecs-task-definitions/backend.json
+
+# Frontend Task Definition
+aws ecs register-task-definition \
+  --cli-input-json file://ecs-task-definitions/frontend.json
 ```
 
 ### 4. ECS Service 생성
@@ -115,16 +127,28 @@ SUBNETS=$(terraform output -json private_app_subnet_ids | jq -r 'join(",")')
 ECS_SG=$(terraform output -raw ecs_tasks_security_group_id)
 TARGET_GROUP_ARN=$(terraform output -raw alb_target_group_arn)
 
-# Service 생성
+# Backend Service 생성
 aws ecs create-service \
   --cluster $CLUSTER_NAME \
-  --service-name cat-gateway-api \
-  --task-definition cat-gateway-api \
+  --service-name cat-backend \
+  --task-definition cat-backend \
   --desired-count 2 \
   --launch-type FARGATE \
   --platform-version LATEST \
   --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$ECS_SG],assignPublicIp=DISABLED}" \
-  --load-balancers targetGroupArn=$TARGET_GROUP_ARN,containerName=gateway-api,containerPort=80 \
+  --load-balancers targetGroupArn=$TARGET_GROUP_ARN,containerName=backend,containerPort=8080 \
+  --health-check-grace-period-seconds 60
+
+# Frontend Service 생성
+aws ecs create-service \
+  --cluster $CLUSTER_NAME \
+  --service-name cat-frontend \
+  --task-definition cat-frontend \
+  --desired-count 2 \
+  --launch-type FARGATE \
+  --platform-version LATEST \
+  --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$ECS_SG],assignPublicIp=DISABLED}" \
+  --load-balancers targetGroupArn=$TARGET_GROUP_ARN,containerName=frontend,containerPort=3000 \
   --health-check-grace-period-seconds 60
 ```
 
@@ -134,15 +158,37 @@ aws ecs create-service \
 
 ### 주요 설정 항목
 
+#### Backend (backend.json)
+
 ```json
 {
   "cpu": "256",           // vCPU (256 = 0.25 vCPU)
   "memory": "512",        // 메모리 (MB)
-  "containerPort": 80,    // 컨테이너 포트
+  "containerPort": 8080,  // 컨테이너 포트
   "environment": [        // 환경 변수
     {
-      "name": "ENV",
-      "value": "dev"
+      "name": "DB_HOST",
+      "value": "cat-mysql.xxx.ap-northeast-2.rds.amazonaws.com"
+    },
+    {
+      "name": "DB_PORT",
+      "value": "3306"
+    }
+  ]
+}
+```
+
+#### Frontend (frontend.json)
+
+```json
+{
+  "cpu": "256",           // vCPU (256 = 0.25 vCPU)
+  "memory": "512",        // 메모리 (MB)
+  "containerPort": 3000,  // 컨테이너 포트 (React 기본)
+  "environment": [        // 환경 변수
+    {
+      "name": "REACT_APP_API_URL",
+      "value": "http://cat-alb-xxx.ap-northeast-2.elb.amazonaws.com"
     }
   ]
 }
@@ -158,30 +204,70 @@ aws ecs create-service \
 | 2    | 4 ~ 16      |
 | 4    | 8 ~ 30      |
 
+## 환경 변수 설정
+
+### Backend 환경 변수
+
+배포 후 RDS 엔드포인트를 확인하여 Task Definition을 업데이트하세요:
+
+```bash
+# RDS 엔드포인트 확인
+terraform output rds_instance_endpoint
+
+# Task Definition 업데이트
+# backend.json에서 DB_HOST 값을 실제 RDS 엔드포인트로 변경
+```
+
+### Frontend 환경 변수
+
+ALB DNS를 확인하여 API URL을 설정하세요:
+
+```bash
+# ALB DNS 확인
+terraform output alb_dns_name
+
+# Task Definition 업데이트
+# frontend.json에서 REACT_APP_API_URL 값을 실제 ALB DNS로 변경
+```
+
 ## 모니터링
 
 ### Service 상태 확인
 
 ```bash
+# Backend Service 상태
 aws ecs describe-services \
   --cluster cat-cluster \
-  --services cat-gateway-api
+  --services cat-backend
+
+# Frontend Service 상태
+aws ecs describe-services \
+  --cluster cat-cluster \
+  --services cat-frontend
 ```
 
 ### Task 로그 확인
 
 ```bash
-# 실시간 로그
-aws logs tail /ecs/cat-gateway-api --follow
+# Backend 실시간 로그
+aws logs tail /ecs/cat-backend --follow
 
-# 최근 로그
-aws logs tail /ecs/cat-gateway-api --since 1h
+# Frontend 실시간 로그
+aws logs tail /ecs/cat-frontend --follow
+
+# 최근 1시간 로그
+aws logs tail /ecs/cat-backend --since 1h
+aws logs tail /ecs/cat-frontend --since 1h
 ```
 
 ### Task 목록 확인
 
 ```bash
-aws ecs list-tasks --cluster cat-cluster --service-name cat-gateway-api
+# Backend Tasks
+aws ecs list-tasks --cluster cat-cluster --service-name cat-backend
+
+# Frontend Tasks
+aws ecs list-tasks --cluster cat-cluster --service-name cat-frontend
 ```
 
 ## 트러블슈팅
@@ -194,24 +280,37 @@ aws ecs list-tasks --cluster cat-cluster --service-name cat-gateway-api
 
 ### 2. Health Check 실패
 
-- 컨테이너 내부에 `/health` 엔드포인트 구현 필요
-- Health check 명령어 수정: `healthCheck.command`
+Backend:
+- `/health` 엔드포인트가 8080 포트에서 응답하는지 확인
+- 데이터베이스 연결 확인
+
+Frontend:
+- 3000 포트에서 응답하는지 확인
+- 빌드가 정상적으로 완료되었는지 확인
 
 ### 3. ALB에서 503 에러
 
 - Target Group에 healthy한 Task가 있는지 확인
-- 보안그룹에서 ALB → ECS 통신 허용 확인
+- 보안그룹에서 ALB → ECS 통신 허용 확인 (Backend: 8080, Frontend: 3000)
+
+### 4. Backend가 데이터베이스에 연결하지 못함
+
+- RDS 보안 그룹에서 ECS Tasks로부터의 3306 포트 접근 허용 확인
+- DB_HOST, DB_PORT, DB_NAME 환경 변수 확인
+- RDS 인스턴스가 실행 중인지 확인
 
 ## CI/CD 통합
 
 GitHub Actions 예제:
 
 ```yaml
-name: Deploy to ECS
+name: Deploy Backend to ECS
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'backend/**'
 
 jobs:
   deploy:
@@ -233,19 +332,19 @@ jobs:
 
       - name: Build and Push
         run: |
-          docker build -t cat-gateway-api:${{ github.sha }} .
-          docker tag cat-gateway-api:${{ github.sha }} \
-            277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-gateway-api:${{ github.sha }}
-          docker tag cat-gateway-api:${{ github.sha }} \
-            277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-gateway-api:latest
-          docker push 277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-gateway-api:${{ github.sha }}
-          docker push 277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-gateway-api:latest
+          docker build -t cat-backend:${{ github.sha }} ./backend
+          docker tag cat-backend:${{ github.sha }} \
+            277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-backend:${{ github.sha }}
+          docker tag cat-backend:${{ github.sha }} \
+            277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-backend:latest
+          docker push 277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-backend:${{ github.sha }}
+          docker push 277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-backend:latest
 
       - name: Update ECS Service
         run: |
           aws ecs update-service \
             --cluster cat-cluster \
-            --service cat-gateway-api \
+            --service cat-backend \
             --force-new-deployment
 ```
 

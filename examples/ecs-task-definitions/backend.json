@@ -1,5 +1,5 @@
 {
-  "family": "cat-gateway-api",
+  "family": "cat-backend",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "256",
@@ -8,12 +8,12 @@
   "taskRoleArn": "arn:aws:iam::277679348386:role/cat-cluster-task-role",
   "containerDefinitions": [
     {
-      "name": "gateway-api",
+      "name": "backend",
       "image": "277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-backend:latest",
       "essential": true,
       "portMappings": [
         {
-          "containerPort": 80,
+          "containerPort": 8080,
           "protocol": "tcp"
         }
       ],
@@ -24,20 +24,36 @@
         },
         {
           "name": "PORT",
-          "value": "80"
+          "value": "8080"
+        },
+        {
+          "name": "DB_HOST",
+          "value": "cat-mysql.xxx.ap-northeast-2.rds.amazonaws.com"
+        },
+        {
+          "name": "DB_PORT",
+          "value": "3306"
+        },
+        {
+          "name": "DB_NAME",
+          "value": "catdb"
+        },
+        {
+          "name": "DB_USER",
+          "value": "admin"
         }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/cat-gateway-api",
+          "awslogs-group": "/ecs/cat-backend",
           "awslogs-region": "ap-northeast-2",
           "awslogs-stream-prefix": "ecs",
           "awslogs-create-group": "true"
         }
       },
       "healthCheck": {
-        "command": ["CMD-SHELL", "curl -f http://localhost/health || exit 1"],
+        "command": ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"],
         "interval": 30,
         "timeout": 5,
         "retries": 3,

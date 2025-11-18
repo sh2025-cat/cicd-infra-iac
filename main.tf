@@ -20,9 +20,11 @@ module "vpc" {
 module "security_groups" {
   source = "./modules/security-groups"
 
-  name_prefix   = var.project_name
-  vpc_id        = module.vpc.vpc_id
-  create_rds_sg = var.create_rds
+  name_prefix                 = var.project_name
+  vpc_id                      = module.vpc.vpc_id
+  create_rds_sg               = var.create_rds
+  create_bastion_sg           = var.create_bastion
+  bastion_allowed_cidr_blocks = var.bastion_allowed_cidr_blocks
 
   tags = {
     Environment = var.environment
@@ -148,6 +150,28 @@ module "cloudfront" {
   default_root_object = ""
   price_class         = "PriceClass_100"
   web_acl_id          = var.create_waf ? module.waf[0].web_acl_arn : ""
+
+  tags = {
+    Environment = var.environment
+    Project     = "Softbank2025-Cat"
+  }
+}
+
+# ===========================================
+# Bastion Host Module
+# ===========================================
+
+module "bastion" {
+  source = "./modules/bastion"
+  count  = var.create_bastion ? 1 : 0
+
+  name_prefix       = var.project_name
+  public_subnet_id  = module.vpc.public_subnet[0]
+  security_group_id = module.security_groups.bastion_sg_id
+  instance_type     = var.bastion_instance_type
+  allocate_eip      = var.bastion_allocate_eip
+  private_key_path  = var.bastion_private_key_path
+  root_volume_size  = var.bastion_root_volume_size
 
   tags = {
     Environment = var.environment

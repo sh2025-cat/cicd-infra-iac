@@ -51,6 +51,11 @@ Terraform을 사용한 Cat CICD 인프라 관리 프로젝트입니다.
 │   │   ├── outputs.tf
 │   │   ├── variables.tf
 │   │   └── versions.tf
+│   ├── bastion/            # Bastion Host
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   ├── variables.tf
+│   │   └── versions.tf
 │   └── security-groups/    # 보안 그룹
 │       ├── main.tf
 │       ├── outputs.tf
@@ -359,10 +364,38 @@ terraform output waf_web_acl_arn
 - DDoS 공격 방어 (Rate Limiting)
 - 실시간 위협 차단
 
+### Bastion Host (선택사항)
+- **배포 여부**: `create_bastion = true/false`로 제어
+- **위치**: Public Subnet (SSH 접근 가능)
+- **용도**: Private 리소스(RDS, ECS Tasks)에 안전하게 접근
+- **인스턴스 타입**: t3.micro (기본값)
+- **Elastic IP**: 고정 Public IP 할당
+- **SSH Key**: Terraform으로 자동 생성 (`./ssh-keys/bastion-key.pem`)
+- **보안**: SSH 접근 제한 가능 (`bastion_allowed_cidr_blocks`)
+
+**SSH 접속:**
+```bash
+# Bastion IP 확인
+terraform output bastion_public_ip
+
+# SSH 접속 명령어 확인
+terraform output bastion_ssh_command
+
+# RDS 접속 (Bastion을 통해)
+ssh -i ./ssh-keys/bastion-key.pem ec2-user@<BASTION_IP>
+mysql -h <RDS_ENDPOINT> -u admin -p
+```
+
+**주의사항:**
+- `ssh-keys/` 디렉토리는 `.gitignore`에 포함되어 GitHub에 업로드되지 않음
+- Private key 파일은 로컬에만 존재하므로 안전하게 보관 필요
+- 프로덕션 환경에서는 `bastion_allowed_cidr_blocks`로 IP 제한 권장
+
 ### 보안
-- **Security Groups**: ALB용, ECS Tasks용
+- **Security Groups**: ALB용, ECS Tasks용, Bastion용
 - **IAM Roles**: Task Execution Role, Task Role
 - **WAF**: CloudFront용 Web Application Firewall (선택사항)
+- **Bastion Host**: Private 리소스 안전 접근 (선택사항)
 
 ## 사용 방법
 

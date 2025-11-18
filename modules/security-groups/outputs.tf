@@ -16,3 +16,8 @@ output "rds_sg_id" {
   description = "ID of the RDS security group"
   value       = var.create_rds_sg ? aws_security_group.rds[0].id : null
 }
+
+output "bastion_sg_id" {
+  description = "ID of the Bastion security group"
+  value       = var.create_bastion_sg ? aws_security_group.bastion[0].id : null
+}

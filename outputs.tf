@@ -173,3 +173,32 @@ output "waf_web_acl_capacity" {
   description = "WAF Web ACL Capacity"
   value       = var.create_waf ? module.waf[0].web_acl_capacity : null
 }
+
+# ===========================================
+# Bastion Host Outputs
+# ===========================================
+
+output "bastion_instance_id" {
+  description = "Bastion Host instance ID"
+  value       = var.create_bastion ? module.bastion[0].bastion_instance_id : null
+}
+
+output "bastion_public_ip" {
+  description = "Bastion Host public IP"
+  value       = var.create_bastion ? module.bastion[0].bastion_public_ip : null
+}
+
+output "bastion_private_ip" {
+  description = "Bastion Host private IP"
+  value       = var.create_bastion ? module.bastion[0].bastion_private_ip : null
+}
+
+output "bastion_ssh_command" {
+  description = "SSH command to connect to Bastion"
+  value       = var.create_bastion ? module.bastion[0].ssh_command : null
+}
+
+output "bastion_security_group_id" {
+  description = "Bastion Host security group ID"
+  value       = module.security_groups.bastion_sg_id
+}

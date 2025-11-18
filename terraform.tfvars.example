@@ -70,3 +70,21 @@ create_waf = false
 # Enable CloudWatch metrics and sampled requests for WAF (incurs additional costs)
 # waf_enable_cloudwatch_metrics = false
 # waf_enable_sampled_requests = false
+
+# ===========================================
+# Bastion Host Configuration
+# ===========================================
+
+# Enable Bastion Host for secure SSH access to private resources
+create_bastion = false
+
+# Bastion instance settings
+# bastion_instance_type = "t3.micro"
+# bastion_allocate_eip = true
+# bastion_private_key_path = "./ssh-keys"
+# bastion_root_volume_size = 8
+
+# SSH access restriction (default: allow from anywhere)
+# bastion_allowed_cidr_blocks = ["0.0.0.0/0"]
+# For security, restrict to your IP:
+# bastion_allowed_cidr_blocks = ["YOUR_IP/32"]

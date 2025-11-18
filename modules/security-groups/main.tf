@@ -67,6 +67,38 @@ resource "aws_security_group" "ecs_tasks" {
 }
 
 # ===========================================
+# Bastion Host Security Group
+# ===========================================
+
+resource "aws_security_group" "bastion" {
+  count = var.create_bastion_sg ? 1 : 0
+
+  name        = "${var.name_prefix}-bastion-sg"
+  description = "Security group for Bastion Host"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description = "SSH from anywhere"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = var.bastion_allowed_cidr_blocks
+  }
+
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(var.tags, {
+    Name = "${var.name_prefix}-bastion-sg"
+  })
+}
+
+# ===========================================
 # RDS Security Group (if needed)
 # ===========================================
 
@@ -83,6 +115,14 @@ resource "aws_security_group" "rds" {
     to_port         = 3306
     protocol        = "tcp"
     security_groups = [aws_security_group.ecs_tasks.id]
+  }
+
+  ingress {
+    description     = "MySQL from Bastion"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = var.create_bastion_sg ? [aws_security_group.bastion[0].id] : []
   }
 
   egress {

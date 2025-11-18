@@ -182,3 +182,43 @@ variable "waf_enable_sampled_requests" {
   type        = bool
   default     = false
 }
+
+# ===========================================
+# Bastion Host Configuration
+# ===========================================
+
+variable "create_bastion" {
+  description = "Whether to create Bastion Host"
+  type        = bool
+  default     = false
+}
+
+variable "bastion_instance_type" {
+  description = "EC2 instance type for Bastion Host"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "bastion_allocate_eip" {
+  description = "Whether to allocate Elastic IP for Bastion"
+  type        = bool
+  default     = true
+}
+
+variable "bastion_private_key_path" {
+  description = "Path to save the Bastion private key"
+  type        = string
+  default     = "./ssh-keys"
+}
+
+variable "bastion_root_volume_size" {
+  description = "Root volume size for Bastion (GB)"
+  type        = number
+  default     = 8
+}
+
+variable "bastion_allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to SSH into Bastion"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}

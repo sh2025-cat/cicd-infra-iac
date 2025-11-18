@@ -83,6 +83,23 @@ jobs:
         terraform show -no-color tfplan > plan.txt
       continue-on-error: true
 
+    - name: Cleanup on Failure
+      if: failure() || cancelled()
+      run: |
+        echo "Cleaning up Terraform state lock if exists..."
+        LOCK_ID=$(aws dynamodb scan \
+          --table-name softbank2025-cat-tfstate-lock \
+          --filter-expression "contains(#info, :path)" \
+          --expression-attribute-names '{"#info":"Info"}' \
+          --expression-attribute-values '{":path":{"S":"cat-cicd/terraform.tfstate"}}' \
+          --query 'Items[0].LockID.S' \
+          --output text 2>/dev/null || echo "")
+
+        if [ ! -z "$LOCK_ID" ] && [ "$LOCK_ID" != "None" ]; then
+          echo "Found lock ID: $LOCK_ID"
+          terraform force-unlock -force "$LOCK_ID" || true
+        fi
+
     - name: Comment PR with Plan
       uses: actions/github-script@v7
       with:
@@ -155,10 +172,42 @@ jobs:
       run: terraform init
 
     - name: Terraform Plan
+      id: plan
       run: terraform plan -out=tfplan
+      continue-on-error: true
 
     - name: Terraform Apply
+      id: apply
+      if: steps.plan.outcome == 'success'
       run: terraform apply -auto-approve tfplan
+      continue-on-error: true
+
+    - name: Cleanup on Failure
+      if: failure() || cancelled()
+      run: |
+        echo "Cleaning up Terraform state lock if exists..."
+        # Get lock info from DynamoDB
+        LOCK_ID=$(aws dynamodb scan \
+          --table-name softbank2025-cat-tfstate-lock \
+          --filter-expression "contains(#info, :path)" \
+          --expression-attribute-names '{"#info":"Info"}' \
+          --expression-attribute-values '{":path":{"S":"cat-cicd/terraform.tfstate"}}' \
+          --query 'Items[0].LockID.S' \
+          --output text 2>/dev/null || echo "")
+
+        if [ ! -z "$LOCK_ID" ] && [ "$LOCK_ID" != "None" ]; then
+          echo "Found lock ID: $LOCK_ID"
+          echo "Attempting to force unlock..."
+          terraform force-unlock -force "$LOCK_ID" || true
+        else
+          echo "No active lock found"
+        fi
+
+    - name: Check Apply Status
+      if: steps.apply.outcome == 'failure'
+      run: |
+        echo "::error::Terraform apply failed"
+        exit 1
 
     - name: Terraform Output
       id: output
@@ -198,4 +247,29 @@ jobs:
       run: terraform init
 
     - name: Terraform Destroy
+      id: destroy
       run: terraform destroy -auto-approve
+      continue-on-error: true
+
+    - name: Cleanup on Failure
+      if: failure() || cancelled()
+      run: |
+        echo "Cleaning up Terraform state lock if exists..."
+        LOCK_ID=$(aws dynamodb scan \
+          --table-name softbank2025-cat-tfstate-lock \
+          --filter-expression "contains(#info, :path)" \
+          --expression-attribute-names '{"#info":"Info"}' \
+          --expression-attribute-values '{":path":{"S":"cat-cicd/terraform.tfstate"}}' \
+          --query 'Items[0].LockID.S' \
+          --output text 2>/dev/null || echo "")
+
+        if [ ! -z "$LOCK_ID" ] && [ "$LOCK_ID" != "None" ]; then
+          echo "Found lock ID: $LOCK_ID"
+          terraform force-unlock -force "$LOCK_ID" || true
+        fi
+
+    - name: Check Destroy Status
+      if: steps.destroy.outcome == 'failure'
+      run: |
+        echo "::error::Terraform destroy failed"
+        exit 1

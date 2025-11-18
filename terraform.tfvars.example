@@ -44,3 +44,15 @@ backend_domain = "cicd-api.go-to-learn.net"
 
 # Frontend domain (connects to frontend target group)
 frontend_domain = "cicd.go-to-learn.net"
+
+# ===========================================
+# CloudFront Configuration
+# ===========================================
+
+# Enable CloudFront distribution
+create_cloudfront = false
+
+# ACM certificate ARN for CloudFront (must be in us-east-1 region)
+# To enable HTTPS for CloudFront, create a certificate in us-east-1 and provide ARN here
+# Example: cloudfront_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/xxxxx"
+cloudfront_certificate_arn = ""

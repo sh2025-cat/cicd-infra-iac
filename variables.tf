@@ -138,3 +138,19 @@ variable "frontend_domain" {
   type        = string
   default     = "cicd.go-to-learn.net"
 }
+
+# ===========================================
+# CloudFront Configuration
+# ===========================================
+
+variable "create_cloudfront" {
+  description = "Create CloudFront distribution"
+  type        = bool
+  default     = false
+}
+
+variable "cloudfront_certificate_arn" {
+  description = "ACM certificate ARN for CloudFront (must be in us-east-1)"
+  type        = string
+  default     = ""
+}

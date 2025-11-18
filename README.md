@@ -303,7 +303,27 @@ Terraform으로 배포되는 AWS 리소스:
     - Domain: `cicd-api.go-to-learn.net`
   - Frontend: `cat-frontend-tg` (포트 80, Health check: `/`)
     - Domain: `cicd.go-to-learn.net`
-- **ACM 인증서**: `*.go-to-learn.net` (HTTPS용, 선택사항)
+- **ACM 인증서 (ap-northeast-2)**: `*.go-to-learn.net` (ALB HTTPS용)
+
+### CloudFront (선택사항)
+- **배포 여부**: `create_cloudfront = true/false`로 제어
+- **Origin**: ALB
+- **Cache TTL**: 0 (캐싱 없음)
+- **지원 도메인**: `cicd-api.go-to-learn.net`, `cicd.go-to-learn.net`
+- **ACM 인증서 (us-east-1)**: CloudFront용 인증서 (US-EAST-1 리전 필수)
+- **사용 목적**:
+  - Global CDN 배포
+  - DDoS 보호 (AWS Shield Standard 자동 적용)
+  - WAF 연동 가능
+  - HTTPS 강제 (redirect-to-https)
+
+**DNS 설정 (Cloudflare):**
+```
+cicd-api.go-to-learn.net  → CNAME → <cloudfront_domain_name>
+cicd.go-to-learn.net      → CNAME → <cloudfront_domain_name>
+```
+
+CloudFront DNS는 `terraform output cloudfront_domain_name`으로 확인 가능
 
 ### 보안
 - **Security Groups**: ALB용, ECS Tasks용

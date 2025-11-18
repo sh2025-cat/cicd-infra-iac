@@ -31,10 +31,10 @@ variable "acm_certificate_arn" {
   default     = ""
 }
 
-variable "custom_header_value" {
-  description = "Custom header value to verify requests from CloudFront"
+variable "alb_certificate_arn" {
+  description = "ALB ACM certificate ARN (to determine origin protocol)"
   type        = string
-  default     = "CloudFrontOriginVerify"
+  default     = ""
 }
 
 variable "aliases" {

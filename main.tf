@@ -108,3 +108,25 @@ module "rds" {
     Project     = "Softbank2025-Cat"
   }
 }
+
+# ===========================================
+# CloudFront Distribution Module
+# ===========================================
+
+module "cloudfront" {
+  source = "./modules/cloudfront"
+  count  = var.create_cloudfront ? 1 : 0
+
+  name_prefix         = var.project_name
+  alb_dns_name        = module.alb.alb_dns_name
+  acm_certificate_arn = var.cloudfront_certificate_arn
+  alb_certificate_arn = var.alb_certificate_arn
+  aliases             = [var.backend_domain, var.frontend_domain]
+  default_root_object = ""
+  price_class         = "PriceClass_100"
+
+  tags = {
+    Environment = var.environment
+    Project     = "Softbank2025-Cat"
+  }
+}

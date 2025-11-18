@@ -125,3 +125,27 @@ output "rds_master_username" {
   value       = var.create_rds ? module.rds[0].db_master_username : null
   sensitive   = true
 }
+
+# ===========================================
+# CloudFront Outputs
+# ===========================================
+
+output "cloudfront_id" {
+  description = "CloudFront Distribution ID"
+  value       = var.create_cloudfront ? module.cloudfront[0].cloudfront_id : null
+}
+
+output "cloudfront_domain_name" {
+  description = "CloudFront Distribution Domain Name"
+  value       = var.create_cloudfront ? module.cloudfront[0].cloudfront_domain_name : null
+}
+
+output "cloudfront_hosted_zone_id" {
+  description = "CloudFront Distribution Hosted Zone ID"
+  value       = var.create_cloudfront ? module.cloudfront[0].cloudfront_hosted_zone_id : null
+}
+
+output "cloudfront_status" {
+  description = "CloudFront Distribution Status"
+  value       = var.create_cloudfront ? module.cloudfront[0].cloudfront_status : null
+}

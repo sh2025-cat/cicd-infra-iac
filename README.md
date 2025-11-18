@@ -295,8 +295,13 @@ Terraform으로 배포되는 AWS 리소스:
 ### 로드 밸런서
 - **ALB**: HTTP(80) + HTTPS(443)
   - DNS: `cat-alb-*.ap-northeast-2.elb.amazonaws.com`
-  - Target Group: `cat-tg` (Health check: `/health`)
-- **ACM 인증서**: `*.go-to-learn.net` (HTTPS용)
+  - Host-based 라우팅 지원
+- **Target Groups**:
+  - Backend: `cat-backend-tg` (포트 80, Health check: `/`)
+    - Domain: `cicd-api.go-to-learn.net`
+  - Frontend: `cat-frontend-tg` (포트 80, Health check: `/`)
+    - Domain: `cicd.go-to-learn.net`
+- **ACM 인증서**: `*.go-to-learn.net` (HTTPS용, 선택사항)
 
 ### 보안
 - **Security Groups**: ALB용, ECS Tasks용
@@ -329,8 +334,48 @@ terraform output alb_dns_name
 terraform output ecr_repositories
 ```
 
+### 2. 도메인 설정
 
+ALB는 Host-based 라우팅을 사용하여 도메인별로 다른 타겟 그룹으로 트래픽을 전달합니다.
 
+#### 도메인 구성
+
+기본 도메인 설정 (`terraform.tfvars` 또는 `variables.tf`에서 변경 가능):
+- **Backend API**: `cicd-api.go-to-learn.net`
+- **Frontend**: `cicd.go-to-learn.net`
+
+#### DNS 설정
+
+Route 53 또는 외부 DNS 서비스에서 다음과 같이 CNAME 레코드를 추가합니다:
+
+```
+cicd-api.go-to-learn.net  → CNAME → <ALB_DNS_NAME>
+cicd.go-to-learn.net      → CNAME → <ALB_DNS_NAME>
+```
+
+ALB DNS Name은 다음 명령으로 확인할 수 있습니다:
+```bash
+terraform output alb_dns_name
+```
+
+#### HTTPS 설정 (선택사항)
+
+HTTPS를 사용하려면 ACM(AWS Certificate Manager)에서 인증서를 발급받고 `terraform.tfvars`에 ARN을 설정합니다:
+
+```hcl
+# terraform.tfvars
+alb_certificate_arn = "arn:aws:acm:ap-northeast-2:123456789012:certificate/xxxxx"
+```
+
+#### 커스텀 도메인 사용
+
+다른 도메인을 사용하려면 `terraform.tfvars`에서 변경 가능합니다:
+
+```hcl
+# terraform.tfvars
+backend_domain  = "api.yourdomain.com"
+frontend_domain = "app.yourdomain.com"
+```
 
 ### 빠른 시작
 

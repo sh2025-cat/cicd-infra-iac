@@ -33,9 +33,14 @@ create_rds = false
 # ALB Configuration
 # ===========================================
 
-alb_health_check_path = "/health"
-
 # ACM Certificate ARN for HTTPS (optional)
 # To enable HTTPS, replace with your ACM certificate ARN from ap-northeast-2
 # Example: alb_certificate_arn = "arn:aws:acm:ap-northeast-2:123456789012:certificate/xxxxx"
 alb_certificate_arn = ""
+
+# Domain routing configuration
+# Backend API domain (connects to backend target group)
+backend_domain = "cicd-api.go-to-learn.net"
+
+# Frontend domain (connects to frontend target group)
+frontend_domain = "cicd.go-to-learn.net"

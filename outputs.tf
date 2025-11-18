@@ -86,9 +86,14 @@ output "alb_arn" {
   value       = module.alb.alb_arn
 }
 
-output "alb_target_group_arn" {
-  description = "ALB Target Group ARN"
-  value       = module.alb.target_group_arn
+output "backend_target_group_arn" {
+  description = "Backend Target Group ARN"
+  value       = module.alb.backend_target_group_arn
+}
+
+output "frontend_target_group_arn" {
+  description = "Frontend Target Group ARN"
+  value       = module.alb.frontend_target_group_arn
 }
 
 # ===========================================

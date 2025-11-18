@@ -74,8 +74,9 @@ module "alb" {
   vpc_id                = module.vpc.vpc_id
   public_subnet_ids     = module.vpc.public_subnet
   alb_security_group_id = module.security_groups.alb_sg_id
-  health_check_path     = var.alb_health_check_path
   certificate_arn       = var.alb_certificate_arn
+  backend_domain        = var.backend_domain
+  frontend_domain       = var.frontend_domain
 
   tags = {
     Environment = var.environment

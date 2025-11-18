@@ -23,16 +23,20 @@ variable "alb_security_group_id" {
   type        = string
 }
 
-variable "health_check_path" {
-  description = "Health check path"
-  type        = string
-  default     = "/health"
-}
-
 variable "certificate_arn" {
   description = "ACM certificate ARN for HTTPS (optional)"
   type        = string
   default     = ""
+}
+
+variable "backend_domain" {
+  description = "Domain for backend API"
+  type        = string
+}
+
+variable "frontend_domain" {
+  description = "Domain for frontend"
+  type        = string
 }
 
 variable "tags" {

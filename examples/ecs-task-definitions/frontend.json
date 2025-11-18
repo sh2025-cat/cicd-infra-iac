@@ -9,11 +9,11 @@
   "containerDefinitions": [
     {
       "name": "frontend",
-      "image": "277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-frontend:latest",
+      "image": "nginx:latest",
       "essential": true,
       "portMappings": [
         {
-          "containerPort": 3000,
+          "containerPort": 80,
           "protocol": "tcp"
         }
       ],
@@ -21,14 +21,6 @@
         {
           "name": "ENV",
           "value": "dev"
-        },
-        {
-          "name": "PORT",
-          "value": "3000"
-        },
-        {
-          "name": "REACT_APP_API_URL",
-          "value": "http://cat-alb-xxx.ap-northeast-2.elb.amazonaws.com"
         }
       ],
       "logConfiguration": {
@@ -41,11 +33,11 @@
         }
       },
       "healthCheck": {
-        "command": ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"],
+        "command": ["CMD-SHELL", "curl -f http://localhost/ || exit 1"],
         "interval": 30,
         "timeout": 5,
         "retries": 3,
-        "startPeriod": 60
+        "startPeriod": 30
       }
     }
   ]

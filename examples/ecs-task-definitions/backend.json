@@ -9,11 +9,11 @@
   "containerDefinitions": [
     {
       "name": "backend",
-      "image": "277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-backend:latest",
+      "image": "nginx:latest",
       "essential": true,
       "portMappings": [
         {
-          "containerPort": 8080,
+          "containerPort": 80,
           "protocol": "tcp"
         }
       ],
@@ -21,26 +21,6 @@
         {
           "name": "ENV",
           "value": "dev"
-        },
-        {
-          "name": "PORT",
-          "value": "8080"
-        },
-        {
-          "name": "DB_HOST",
-          "value": "cat-mysql.xxx.ap-northeast-2.rds.amazonaws.com"
-        },
-        {
-          "name": "DB_PORT",
-          "value": "3306"
-        },
-        {
-          "name": "DB_NAME",
-          "value": "catdb"
-        },
-        {
-          "name": "DB_USER",
-          "value": "admin"
         }
       ],
       "logConfiguration": {
@@ -53,11 +33,11 @@
         }
       },
       "healthCheck": {
-        "command": ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"],
+        "command": ["CMD-SHELL", "curl -f http://localhost/ || exit 1"],
         "interval": 30,
         "timeout": 5,
         "retries": 3,
-        "startPeriod": 60
+        "startPeriod": 30
       }
     }
   ]

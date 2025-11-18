@@ -121,14 +121,20 @@ variable "rds_master_password" {
 # ALB Configuration
 # ===========================================
 
-variable "alb_health_check_path" {
-  description = "Health check path for ALB target group"
-  type        = string
-  default     = "/health"
-}
-
 variable "alb_certificate_arn" {
   description = "ACM certificate ARN for ALB HTTPS listener (optional)"
   type        = string
   default     = ""
+}
+
+variable "backend_domain" {
+  description = "Domain for backend API"
+  type        = string
+  default     = "cicd-api.go-to-learn.net"
+}
+
+variable "frontend_domain" {
+  description = "Domain for frontend"
+  type        = string
+  default     = "cicd.go-to-learn.net"
 }

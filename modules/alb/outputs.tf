@@ -22,16 +22,29 @@ output "alb_zone_id" {
   value       = aws_lb.main.zone_id
 }
 
-output "target_group_arn" {
-  description = "ARN of the target group"
-  value       = aws_lb_target_group.main.arn
+# Backend Target Group
+output "backend_target_group_arn" {
+  description = "ARN of the backend target group"
+  value       = aws_lb_target_group.backend.arn
 }
 
-output "target_group_name" {
-  description = "Name of the target group"
-  value       = aws_lb_target_group.main.name
+output "backend_target_group_name" {
+  description = "Name of the backend target group"
+  value       = aws_lb_target_group.backend.name
 }
 
+# Frontend Target Group
+output "frontend_target_group_arn" {
+  description = "ARN of the frontend target group"
+  value       = aws_lb_target_group.frontend.arn
+}
+
+output "frontend_target_group_name" {
+  description = "Name of the frontend target group"
+  value       = aws_lb_target_group.frontend.name
+}
+
+# Listeners
 output "http_listener_arn" {
   description = "ARN of the HTTP listener"
   value       = aws_lb_listener.http.arn

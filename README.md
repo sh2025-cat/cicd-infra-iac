@@ -292,6 +292,8 @@ Terraform으로 배포되는 AWS 리소스:
   - `cat-backend` (Backend API)
   - `cat-frontend` (Frontend)
 
+**참고**: ECS Services와 Task Definitions은 애플리케이션 레포지토리에서 관리합니다. [ECS-DEPLOYMENT-GUIDE.md](./ECS-DEPLOYMENT-GUIDE.md) 참고
+
 ### 로드 밸런서
 - **ALB**: HTTP(80) + HTTPS(443)
   - DNS: `cat-alb-*.ap-northeast-2.elb.amazonaws.com`
@@ -375,6 +377,39 @@ alb_certificate_arn = "arn:aws:acm:ap-northeast-2:123456789012:certificate/xxxxx
 # terraform.tfvars
 backend_domain  = "api.yourdomain.com"
 frontend_domain = "app.yourdomain.com"
+```
+
+### 3. 애플리케이션 배포
+
+이 인프라 레포는 **인프라 리소스만 관리**합니다 (VPC, ALB, ECS Cluster, ECR, RDS).
+
+ECS 애플리케이션(Task Definition, Service)은 **각 애플리케이션 레포지토리에서 배포**합니다.
+
+**자세한 배포 가이드: [ECS-DEPLOYMENT-GUIDE.md](./ECS-DEPLOYMENT-GUIDE.md)**
+
+이 가이드에서 다루는 내용:
+- ALB와 ECS Service 연결 방법
+- Task Definition 작성
+- GitHub Actions로 자동 배포
+- 헬스체크 설정
+- 롤백 방법
+- 트러블슈팅
+
+**빠른 시작 (애플리케이션 레포에서):**
+```bash
+# 1. ECR 로그인
+aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 277679348386.dkr.ecr.ap-northeast-2.amazonaws.com
+
+# 2. 이미지 빌드 및 푸시
+docker build -t cat-backend .
+docker tag cat-backend:latest 277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-backend:latest
+docker push 277679348386.dkr.ecr.ap-northeast-2.amazonaws.com/cat-backend:latest
+
+# 3. ECS Service 생성 (최초 1회)
+aws ecs create-service --cli-input-json file://service-definition.json
+
+# 4. 이후 배포는 GitHub Actions 자동화
+git push origin main
 ```
 
 ### 빠른 시작

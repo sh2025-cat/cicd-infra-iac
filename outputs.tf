@@ -149,3 +149,27 @@ output "cloudfront_status" {
   description = "CloudFront Distribution Status"
   value       = var.create_cloudfront ? module.cloudfront[0].cloudfront_status : null
 }
+
+# ===========================================
+# WAF Outputs
+# ===========================================
+
+output "waf_web_acl_id" {
+  description = "WAF Web ACL ID"
+  value       = var.create_waf ? module.waf[0].web_acl_id : null
+}
+
+output "waf_web_acl_arn" {
+  description = "WAF Web ACL ARN"
+  value       = var.create_waf ? module.waf[0].web_acl_arn : null
+}
+
+output "waf_web_acl_name" {
+  description = "WAF Web ACL Name"
+  value       = var.create_waf ? module.waf[0].web_acl_name : null
+}
+
+output "waf_web_acl_capacity" {
+  description = "WAF Web ACL Capacity"
+  value       = var.create_waf ? module.waf[0].web_acl_capacity : null
+}

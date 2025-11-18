@@ -20,3 +20,17 @@ provider "aws" {
     }
   }
 }
+
+# US-EAST-1 provider for CloudFront WAF (WAF for CloudFront must be in us-east-1)
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+
+  default_tags {
+    tags = {
+      Project     = "Softbank2025-Cat"
+      Environment = var.environment
+      ManagedBy   = "Terraform"
+    }
+  }
+}

@@ -110,6 +110,29 @@ module "rds" {
 }
 
 # ===========================================
+# WAF for CloudFront Module
+# ===========================================
+
+module "waf" {
+  source = "./modules/waf"
+  count  = var.create_waf ? 1 : 0
+
+  providers = {
+    aws = aws.us_east_1
+  }
+
+  name_prefix               = var.project_name
+  rate_limit                = var.waf_rate_limit
+  enable_cloudwatch_metrics = var.waf_enable_cloudwatch_metrics
+  enable_sampled_requests   = var.waf_enable_sampled_requests
+
+  tags = {
+    Environment = var.environment
+    Project     = "Softbank2025-Cat"
+  }
+}
+
+# ===========================================
 # CloudFront Distribution Module
 # ===========================================
 
@@ -124,6 +147,7 @@ module "cloudfront" {
   aliases             = [var.backend_domain, var.frontend_domain]
   default_root_object = ""
   price_class         = "PriceClass_100"
+  web_acl_id          = var.create_waf ? module.waf[0].web_acl_arn : ""
 
   tags = {
     Environment = var.environment

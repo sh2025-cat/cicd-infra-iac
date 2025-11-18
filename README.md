@@ -46,6 +46,11 @@ Terraform을 사용한 Cat CICD 인프라 관리 프로젝트입니다.
 │   │   ├── outputs.tf
 │   │   ├── variables.tf
 │   │   └── versions.tf
+│   ├── waf/                # WAF Web ACL
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   ├── variables.tf
+│   │   └── versions.tf
 │   └── security-groups/    # 보안 그룹
 │       ├── main.tf
 │       ├── outputs.tf
@@ -325,9 +330,39 @@ cicd.go-to-learn.net      → CNAME → <cloudfront_domain_name>
 
 CloudFront DNS는 `terraform output cloudfront_domain_name`으로 확인 가능
 
+### WAF (Web Application Firewall)
+- **배포 여부**: `create_waf = true/false`로 제어
+- **적용 대상**: CloudFront Distribution
+- **리전**: US-EAST-1 (CloudFront용 WAF는 us-east-1에서만 생성 가능)
+- **보호 규칙**:
+  - **AWS Managed Rules - Common Rule Set**: 일반적인 웹 공격 차단 (OWASP Top 10)
+  - **AWS Managed Rules - Known Bad Inputs**: 알려진 악성 입력 패턴 차단
+  - **AWS Managed Rules - SQL Injection**: SQL Injection 공격 차단
+  - **Rate Limiting**: IP당 5분에 2000개 요청 제한 (DDoS 방어)
+- **비용 최적화**:
+  - CloudWatch 메트릭: 비활성화 (`waf_enable_cloudwatch_metrics = false`)
+  - 샘플 요청: 비활성화 (`waf_enable_sampled_requests = false`)
+  - AWS Managed Rules는 무료 (WAF 요청 비용만 발생)
+
+**WAF 설정 확인:**
+```bash
+# WAF Web ACL ID 확인
+terraform output waf_web_acl_id
+
+# WAF Web ACL ARN 확인
+terraform output waf_web_acl_arn
+```
+
+**보호 기능:**
+- SQL Injection, XSS, CSRF 등 일반적인 웹 공격 차단
+- 알려진 악성 봇 및 스캐너 차단
+- DDoS 공격 방어 (Rate Limiting)
+- 실시간 위협 차단
+
 ### 보안
 - **Security Groups**: ALB용, ECS Tasks용
 - **IAM Roles**: Task Execution Role, Task Role
+- **WAF**: CloudFront용 Web Application Firewall (선택사항)
 
 ## 사용 방법
 

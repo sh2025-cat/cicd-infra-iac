@@ -13,6 +13,7 @@ resource "aws_cloudfront_distribution" "main" {
   default_root_object = var.default_root_object
   price_class         = var.price_class
   aliases             = var.aliases
+  web_acl_id          = var.web_acl_id != "" ? var.web_acl_id : null
 
   # ALB Origin
   origin {

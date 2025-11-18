@@ -56,3 +56,17 @@ create_cloudfront = false
 # To enable HTTPS for CloudFront, create a certificate in us-east-1 and provide ARN here
 # Example: cloudfront_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/xxxxx"
 cloudfront_certificate_arn = ""
+
+# ===========================================
+# WAF Configuration
+# ===========================================
+
+# Enable WAF Web ACL for CloudFront (provides DDoS protection and security rules)
+create_waf = false
+
+# Rate limit: Maximum requests per 5 minutes from a single IP
+# waf_rate_limit = 2000
+
+# Enable CloudWatch metrics and sampled requests for WAF (incurs additional costs)
+# waf_enable_cloudwatch_metrics = false
+# waf_enable_sampled_requests = false

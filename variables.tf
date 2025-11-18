@@ -154,3 +154,31 @@ variable "cloudfront_certificate_arn" {
   type        = string
   default     = ""
 }
+
+# ===========================================
+# WAF Configuration
+# ===========================================
+
+variable "create_waf" {
+  description = "Create WAF Web ACL for CloudFront"
+  type        = bool
+  default     = false
+}
+
+variable "waf_rate_limit" {
+  description = "Maximum number of requests per 5 minutes from a single IP"
+  type        = number
+  default     = 2000
+}
+
+variable "waf_enable_cloudwatch_metrics" {
+  description = "Enable CloudWatch metrics for WAF"
+  type        = bool
+  default     = false
+}
+
+variable "waf_enable_sampled_requests" {
+  description = "Enable sampling of requests for WAF"
+  type        = bool
+  default     = false
+}

@@ -202,3 +202,17 @@ output "bastion_security_group_id" {
   description = "Bastion Host security group ID"
   value       = module.security_groups.bastion_sg_id
 }
+
+# ===========================================
+# CloudWatch Logs Outputs
+# ===========================================
+
+output "backend_log_group_name" {
+  description = "Backend CloudWatch log group name"
+  value       = module.cloudwatch_logs.backend_log_group_name
+}
+
+output "frontend_log_group_name" {
+  description = "Frontend CloudWatch log group name"
+  value       = module.cloudwatch_logs.frontend_log_group_name
+}

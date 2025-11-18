@@ -51,6 +51,22 @@ module "ecs" {
 }
 
 # ===========================================
+# CloudWatch Logs Module
+# ===========================================
+
+module "cloudwatch_logs" {
+  source = "./modules/cloudwatch-logs"
+
+  name_prefix        = var.project_name
+  log_retention_days = var.ecs_log_retention_days
+
+  tags = {
+    Environment = var.environment
+    Project     = "Softbank2025-Cat"
+  }
+}
+
+# ===========================================
 # ECR Repositories Module
 # ===========================================
 

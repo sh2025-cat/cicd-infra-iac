@@ -380,25 +380,40 @@ terraform output waf_web_acl_arn
 - **용도**: Private 리소스(RDS, ECS Tasks)에 안전하게 접근
 - **인스턴스 타입**: t3.micro (기본값)
 - **Elastic IP**: 고정 Public IP 할당
-- **SSH Key**: Terraform으로 자동 생성 (`./ssh-keys/bastion-key.pem`)
+- **SSH Key**: 사전에 AWS에 생성된 Key Pair 사용 (`bastion_key_name`)
 - **보안**: SSH 접근 제한 가능 (`bastion_allowed_cidr_blocks`)
+
+**사전 준비사항:**
+```bash
+# 1. EC2 Key Pair 생성 (AWS Console 또는 CLI)
+aws ec2 create-key-pair \
+  --key-name cat-bastion-key \
+  --query 'KeyMaterial' \
+  --output text > ~/.ssh/cat-bastion-key.pem
+
+# 2. Private key 파일 권한 설정
+chmod 400 ~/.ssh/cat-bastion-key.pem
+
+# 3. terraform.tfvars에 Key Pair 이름 설정
+# bastion_key_name = "cat-bastion-key"
+```
 
 **SSH 접속:**
 ```bash
 # Bastion IP 확인
 terraform output bastion_public_ip
 
-# SSH 접속 명령어 확인
-terraform output bastion_ssh_command
+# SSH 접속
+ssh -i ~/.ssh/cat-bastion-key.pem ec2-user@<BASTION_IP>
 
 # RDS 접속 (Bastion을 통해)
-ssh -i ./ssh-keys/bastion-key.pem ec2-user@<BASTION_IP>
+ssh -i ~/.ssh/cat-bastion-key.pem ec2-user@<BASTION_IP>
 mysql -h <RDS_ENDPOINT> -u admin -p
 ```
 
 **주의사항:**
-- `ssh-keys/` 디렉토리는 `.gitignore`에 포함되어 GitHub에 업로드되지 않음
-- Private key 파일은 로컬에만 존재하므로 안전하게 보관 필요
+- Bastion 배포 전에 반드시 EC2 Key Pair를 먼저 생성해야 함
+- Private key 파일은 안전하게 보관 필요 (분실 시 복구 불가)
 - 프로덕션 환경에서는 `bastion_allowed_cidr_blocks`로 IP 제한 권장
 
 ### 보안

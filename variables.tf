@@ -217,10 +217,10 @@ variable "bastion_allocate_eip" {
   default     = true
 }
 
-variable "bastion_private_key_path" {
-  description = "Path to save the Bastion private key"
+variable "bastion_key_name" {
+  description = "Name of existing EC2 Key Pair for Bastion SSH access"
   type        = string
-  default     = "./ssh-keys"
+  default     = ""
 }
 
 variable "bastion_root_volume_size" {

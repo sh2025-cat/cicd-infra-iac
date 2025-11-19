@@ -19,16 +19,10 @@ output "bastion_private_ip" {
 
 output "bastion_key_name" {
   description = "Bastion Host SSH key name"
-  value       = aws_key_pair.bastion.key_name
-}
-
-output "bastion_private_key_path" {
-  description = "Path to Bastion private key file"
-  value       = local_file.private_key.filename
-  sensitive   = true
+  value       = var.key_name
 }
 
 output "ssh_command" {
   description = "SSH command to connect to Bastion"
-  value       = "ssh -i ${local_file.private_key.filename} ec2-user@${var.allocate_eip ? aws_eip.bastion[0].public_ip : aws_instance.bastion.public_ip}"
+  value       = "ssh -i ~/.ssh/${var.key_name}.pem ec2-user@${var.allocate_eip ? aws_eip.bastion[0].public_ip : aws_instance.bastion.public_ip}"
 }

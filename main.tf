@@ -188,7 +188,7 @@ module "bastion" {
   security_group_id = module.security_groups.bastion_sg_id
   instance_type     = var.bastion_instance_type
   allocate_eip      = var.bastion_allocate_eip
-  private_key_path  = var.bastion_private_key_path
+  key_name          = var.bastion_key_name
   root_volume_size  = var.bastion_root_volume_size
 
   tags = {

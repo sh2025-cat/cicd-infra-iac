@@ -35,10 +35,9 @@ variable "allocate_eip" {
   default     = true
 }
 
-variable "private_key_path" {
-  description = "Path to save the private key"
+variable "key_name" {
+  description = "Name of existing EC2 Key Pair for SSH access"
   type        = string
-  default     = "./ssh-keys"
 }
 
 variable "tags" {

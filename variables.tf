@@ -139,6 +139,18 @@ variable "frontend_domain" {
   default     = "cicd.go-to-learn.net"
 }
 
+variable "backend_port" {
+  description = "Port for backend application container"
+  type        = number
+  default     = 80
+}
+
+variable "frontend_port" {
+  description = "Port for frontend application container"
+  type        = number
+  default     = 80
+}
+
 # ===========================================
 # CloudFront Configuration
 # ===========================================

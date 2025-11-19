@@ -95,6 +95,8 @@ module "alb" {
   certificate_arn       = var.alb_certificate_arn
   backend_domain        = var.backend_domain
   frontend_domain       = var.frontend_domain
+  backend_port          = var.backend_port
+  frontend_port         = var.frontend_port
 
   tags = {
     Environment = var.environment

@@ -39,6 +39,18 @@ variable "frontend_domain" {
   type        = string
 }
 
+variable "backend_port" {
+  description = "Port for backend target group"
+  type        = number
+  default     = 80
+}
+
+variable "frontend_port" {
+  description = "Port for frontend target group"
+  type        = number
+  default     = 80
+}
+
 variable "tags" {
   description = "A map of tags to assign to resources"
   type        = map(string)

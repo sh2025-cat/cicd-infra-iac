@@ -24,7 +24,7 @@ resource "aws_lb" "main" {
 
 # Backend Target Group
 resource "aws_lb_target_group" "backend" {
-  name                 = "${var.name_prefix}-backend-tg"
+  name_prefix          = "be-"
   port                 = var.backend_port
   protocol             = "HTTP"
   vpc_id               = var.vpc_id
@@ -43,6 +43,10 @@ resource "aws_lb_target_group" "backend" {
     port                = var.backend_port
   }
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   tags = merge(var.tags, {
     Name = "${var.name_prefix}-backend-tg"
   })
@@ -50,7 +54,7 @@ resource "aws_lb_target_group" "backend" {
 
 # Frontend Target Group
 resource "aws_lb_target_group" "frontend" {
-  name                 = "${var.name_prefix}-frontend-tg"
+  name_prefix          = "fe-"
   port                 = var.frontend_port
   protocol             = "HTTP"
   vpc_id               = var.vpc_id
@@ -67,6 +71,10 @@ resource "aws_lb_target_group" "frontend" {
     matcher             = "200"
     protocol            = "HTTP"
     port                = var.frontend_port
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 
   tags = merge(var.tags, {

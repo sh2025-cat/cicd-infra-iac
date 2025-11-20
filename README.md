@@ -319,10 +319,13 @@ Terraform으로 배포되는 AWS 리소스:
   - DNS: `cat-alb-*.ap-northeast-2.elb.amazonaws.com`
   - Host-based 라우팅 지원
 - **Target Groups**:
-  - Backend: `cat-backend-tg` (포트 80, Health check: `/`)
+  - Backend: 포트 **8080** (Health check: `/` on port 8080)
     - Domain: `cicd-api.go-to-learn.net`
-  - Frontend: `cat-frontend-tg` (포트 80, Health check: `/`)
+    - 컨테이너는 8080 포트에서 실행되어야 함
+  - Frontend: 포트 **3000** (Health check: `/` on port 3000)
     - Domain: `cicd.go-to-learn.net`
+    - 컨테이너는 3000 포트에서 실행되어야 함
+  - 포트 설정: `terraform.tfvars`에서 `backend_port`, `frontend_port` 변수로 제어
 - **ACM 인증서 (ap-northeast-2)**: `*.go-to-learn.net` (ALB HTTPS용)
 
 ### CloudFront (선택사항)

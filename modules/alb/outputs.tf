@@ -22,26 +22,48 @@ output "alb_zone_id" {
   value       = aws_lb.main.zone_id
 }
 
-# Backend Target Group
-output "backend_target_group_arn" {
-  description = "ARN of the backend target group"
-  value       = aws_lb_target_group.backend.arn
+# Backend Blue Target Group
+output "backend_blue_target_group_arn" {
+  description = "ARN of the backend blue target group"
+  value       = aws_lb_target_group.backend_blue.arn
 }
 
-output "backend_target_group_name" {
-  description = "Name of the backend target group"
-  value       = aws_lb_target_group.backend.name
+output "backend_blue_target_group_name" {
+  description = "Name of the backend blue target group"
+  value       = aws_lb_target_group.backend_blue.name
 }
 
-# Frontend Target Group
-output "frontend_target_group_arn" {
-  description = "ARN of the frontend target group"
-  value       = aws_lb_target_group.frontend.arn
+# Backend Green Target Group
+output "backend_green_target_group_arn" {
+  description = "ARN of the backend green target group"
+  value       = aws_lb_target_group.backend_green.arn
 }
 
-output "frontend_target_group_name" {
-  description = "Name of the frontend target group"
-  value       = aws_lb_target_group.frontend.name
+output "backend_green_target_group_name" {
+  description = "Name of the backend green target group"
+  value       = aws_lb_target_group.backend_green.name
+}
+
+# Frontend Blue Target Group
+output "frontend_blue_target_group_arn" {
+  description = "ARN of the frontend blue target group"
+  value       = aws_lb_target_group.frontend_blue.arn
+}
+
+output "frontend_blue_target_group_name" {
+  description = "Name of the frontend blue target group"
+  value       = aws_lb_target_group.frontend_blue.name
+}
+
+# Frontend Green Target Group
+output "frontend_green_target_group_arn" {
+  description = "ARN of the frontend green target group"
+  value       = aws_lb_target_group.frontend_green.arn
+}
+
+output "frontend_green_target_group_name" {
+  description = "Name of the frontend green target group"
+  value       = aws_lb_target_group.frontend_green.name
 }
 
 # Listeners

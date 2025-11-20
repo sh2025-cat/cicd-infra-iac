@@ -86,14 +86,24 @@ output "alb_arn" {
   value       = module.alb.alb_arn
 }
 
-output "backend_target_group_arn" {
-  description = "Backend Target Group ARN"
-  value       = module.alb.backend_target_group_arn
+output "backend_blue_target_group_arn" {
+  description = "Backend Blue Target Group ARN (Active)"
+  value       = module.alb.backend_blue_target_group_arn
 }
 
-output "frontend_target_group_arn" {
-  description = "Frontend Target Group ARN"
-  value       = module.alb.frontend_target_group_arn
+output "backend_green_target_group_arn" {
+  description = "Backend Green Target Group ARN (Standby)"
+  value       = module.alb.backend_green_target_group_arn
+}
+
+output "frontend_blue_target_group_arn" {
+  description = "Frontend Blue Target Group ARN (Active)"
+  value       = module.alb.frontend_blue_target_group_arn
+}
+
+output "frontend_green_target_group_arn" {
+  description = "Frontend Green Target Group ARN (Standby)"
+  value       = module.alb.frontend_green_target_group_arn
 }
 
 # ===========================================

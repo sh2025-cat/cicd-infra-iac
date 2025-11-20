@@ -318,14 +318,29 @@ Terraform으로 배포되는 AWS 리소스:
 - **ALB**: HTTP(80) + HTTPS(443)
   - DNS: `cat-alb-*.ap-northeast-2.elb.amazonaws.com`
   - Host-based 라우팅 지원
-- **Target Groups**:
-  - Backend: 포트 **8080** (Health check: `/` on port 8080)
+- **Target Groups** (Blue/Green 배포 지원):
+  - **Backend Blue** (Active): 포트 **8080** (Health check: `/` on port 8080)
+    - Name: `cat-backend-blue-tg`
     - Domain: `cicd-api.go-to-learn.net`
-    - 컨테이너는 8080 포트에서 실행되어야 함
-  - Frontend: 포트 **3000** (Health check: `/` on port 3000)
+    - 현재 프로덕션 트래픽 수신 중
+  - **Backend Green** (Standby): 포트 **8080** (Health check: `/` on port 8080)
+    - Name: `cat-backend-green-tg`
+    - 새 버전 배포 및 테스트용
+  - **Frontend Blue** (Active): 포트 **3000** (Health check: `/` on port 3000)
+    - Name: `cat-frontend-blue-tg`
     - Domain: `cicd.go-to-learn.net`
-    - 컨테이너는 3000 포트에서 실행되어야 함
+    - 현재 프로덕션 트래픽 수신 중
+  - **Frontend Green** (Standby): 포트 **3000** (Health check: `/` on port 3000)
+    - Name: `cat-frontend-green-tg`
+    - 새 버전 배포 및 테스트용
   - 포트 설정: `terraform.tfvars`에서 `backend_port`, `frontend_port` 변수로 제어
+
+**Blue/Green 배포 방법:**
+1. Green Target Group에 새 버전 배포
+2. Green에서 헬스체크 통과 확인
+3. Listener Rule의 target_group_arn을 Green으로 변경
+4. 문제 발생 시 Blue로 즉시 롤백 가능
+
 - **ACM 인증서 (ap-northeast-2)**: `*.go-to-learn.net` (ALB HTTPS용)
 
 ### CloudFront (선택사항)

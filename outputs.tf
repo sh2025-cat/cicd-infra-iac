@@ -226,3 +226,17 @@ output "frontend_log_group_name" {
   description = "Frontend CloudWatch log group name"
   value       = module.cloudwatch_logs.frontend_log_group_name
 }
+
+# ===========================================
+# Secrets Manager Outputs
+# ===========================================
+
+output "db_secret_arn" {
+  description = "ARN of the database credentials secret in Secrets Manager"
+  value       = var.create_rds ? module.secrets[0].secret_arn : null
+}
+
+output "db_secret_name" {
+  description = "Name of the database credentials secret in Secrets Manager"
+  value       = var.create_rds ? module.secrets[0].secret_name : null
+}

@@ -196,3 +196,26 @@ module "bastion" {
     Project     = "Softbank2025-Cat"
   }
 }
+
+# ===========================================
+# Secrets Manager Module
+# ===========================================
+
+module "secrets" {
+  source = "./modules/secrets"
+  count  = var.create_rds ? 1 : 0
+
+  name_prefix = var.project_name
+  db_username = var.rds_master_username
+  db_password = var.rds_master_password
+  db_host     = module.rds[0].db_instance_address
+  db_port     = module.rds[0].db_instance_port
+  db_name     = var.rds_database_name
+
+  recovery_window_in_days = 0 # Immediate deletion for dev
+
+  tags = {
+    Environment = var.environment
+    Project     = "Softbank2025-Cat"
+  }
+}

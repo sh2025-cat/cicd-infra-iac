@@ -144,6 +144,21 @@ resource "aws_iam_role_policy" "ecs_task_role_policy" {
           "tag:GetTagValues"
         ]
         Resource = "*"
+      },
+      {
+        Sid    = "AllowCloudWatchRead"
+        Effect = "Allow"
+        Action = [
+          "cloudwatch:GetMetricData",
+          "cloudwatch:GetMetricStatistics",
+          "cloudwatch:ListMetrics",
+          "cloudwatch:DescribeAlarms",
+          "logs:GetLogEvents",
+          "logs:DescribeLogStreams",
+          "logs:DescribeLogGroups",
+          "logs:FilterLogEvents"
+        ]
+        Resource = "*"
       }
     ]
   })

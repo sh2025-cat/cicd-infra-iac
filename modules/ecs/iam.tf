@@ -159,6 +159,17 @@ resource "aws_iam_role_policy" "ecs_task_role_policy" {
           "logs:FilterLogEvents"
         ]
         Resource = "*"
+      },
+      {
+        Sid    = "AllowECSDescribe"
+        Effect = "Allow"
+        Action = [
+          "ecs:DescribeServices",
+          "ecs:DescribeTasks",
+          "ecs:DescribeTaskDefinition",
+          "ecs:ListTasks"
+        ]
+        Resource = "*"
       }
     ]
   })

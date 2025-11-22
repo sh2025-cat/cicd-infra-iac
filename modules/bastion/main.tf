@@ -43,6 +43,10 @@ resource "aws_instance" "bastion" {
   tags = merge(var.tags, {
     Name = "${var.name_prefix}-bastion"
   })
+
+  lifecycle {
+    ignore_changes = [ami, user_data]
+  }
 }
 
 # Elastic IP for Bastion

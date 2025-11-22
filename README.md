@@ -314,6 +314,13 @@ Terraform으로 배포되는 AWS 리소스:
 
 **참고**: ECS Services와 Task Definitions은 애플리케이션 레포지토리에서 관리합니다. [ECS-DEPLOYMENT-GUIDE.md](./ECS-DEPLOYMENT-GUIDE.md) 참고
 
+### AWS Secrets Manager
+- **DB Credentials**: `cat-db-credentials` (DB 연결 정보)
+  - username, password, host, port, dbname, engine
+- **Backend Environment**: `cat-backend-env` (Backend 환경변수)
+  - GITHUB_TOKEN, ECR_REPOSITORY_URI
+- ECS Task Definition에서 `secrets` 블록으로 참조
+
 ### 로드 밸런서
 - **ALB**: HTTP(80) + HTTPS(443)
   - DNS: `cat-alb-*.ap-northeast-2.elb.amazonaws.com`
@@ -371,7 +378,7 @@ CloudFront DNS는 `terraform output cloudfront_domain_name`으로 확인 가능
   - **AWS Managed Rules - Common Rule Set**: 일반적인 웹 공격 차단 (OWASP Top 10)
   - **AWS Managed Rules - Known Bad Inputs**: 알려진 악성 입력 패턴 차단
   - **AWS Managed Rules - SQL Injection**: SQL Injection 공격 차단
-  - **Rate Limiting**: IP당 5분에 2000개 요청 제한 (DDoS 방어)
+  - **Rate Limiting**: IP당 5분에 100,000개 요청 제한 (DDoS 방어, 테스트용으로 완화됨)
 - **비용 최적화**:
   - CloudWatch 메트릭: 비활성화 (`waf_enable_cloudwatch_metrics = false`)
   - 샘플 요청: 비활성화 (`waf_enable_sampled_requests = false`)
@@ -433,10 +440,13 @@ mysql -h <RDS_ENDPOINT> -u admin -p
 - Bastion 배포 전에 반드시 EC2 Key Pair를 먼저 생성해야 함
 - Private key 파일은 안전하게 보관 필요 (분실 시 복구 불가)
 - 프로덕션 환경에서는 `bastion_allowed_cidr_blocks`로 IP 제한 권장
+- **AMI 재생성 방지**: `lifecycle { ignore_changes = [ami, user_data] }` 설정으로 AMI 업데이트로 인한 인스턴스 재생성 방지
 
 ### 보안
 - **Security Groups**: ALB용, ECS Tasks용, Bastion용
-- **IAM Roles**: Task Execution Role, Task Role
+- **IAM Roles**:
+  - **Task Execution Role**: ECR 이미지 Pull, CloudWatch Logs 쓰기, Secrets Manager 읽기
+  - **Task Role**: S3, CloudWatch Logs, Secrets Manager, **Tagging API** (`tag:GetResources`, `tag:GetTagKeys`, `tag:GetTagValues`)
 - **WAF**: CloudFront용 Web Application Firewall (선택사항)
 - **Bastion Host**: Private 리소스 안전 접근 (선택사항)
 

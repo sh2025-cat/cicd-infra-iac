@@ -134,6 +134,16 @@ resource "aws_iam_role_policy" "ecs_task_role_policy" {
           "secretsmanager:GetSecretValue"
         ]
         Resource = "*"
+      },
+      {
+        Sid    = "AllowTaggingAPI"
+        Effect = "Allow"
+        Action = [
+          "tag:GetResources",
+          "tag:GetTagKeys",
+          "tag:GetTagValues"
+        ]
+        Resource = "*"
       }
     ]
   })

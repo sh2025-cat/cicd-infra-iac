@@ -180,7 +180,7 @@ variable "create_waf" {
 variable "waf_rate_limit" {
   description = "Maximum number of requests per 5 minutes from a single IP"
   type        = number
-  default     = 2000
+  default     = 100000
 }
 
 variable "waf_enable_cloudwatch_metrics" {

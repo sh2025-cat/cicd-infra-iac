@@ -170,6 +170,35 @@ resource "aws_iam_role_policy" "ecs_task_role_policy" {
           "ecs:ListTasks"
         ]
         Resource = "*"
+      },
+      {
+        Sid    = "AllowECSTaskManagement"
+        Effect = "Allow"
+        Action = [
+          "ecs:RunTask",
+          "ecs:StopTask",
+          "ecs:RegisterTaskDefinition",
+          "ecs:DeregisterTaskDefinition"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "AllowECSServiceManagement"
+        Effect = "Allow"
+        Action = [
+          "ecs:CreateService",
+          "ecs:UpdateService",
+          "ecs:DeleteService"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "AllowPassRole"
+        Effect = "Allow"
+        Action = [
+          "iam:PassRole"
+        ]
+        Resource = "*"
       }
     ]
   })
